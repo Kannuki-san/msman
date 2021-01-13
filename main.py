@@ -8,12 +8,12 @@ from kivy.lang.builder import Builder
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 
-Builder.load_file('Msman.kv')
+Builder.load_file('MSman.kv')
 
 class MyWidget(Widget):
     pass
 
-class MSman(App):
+class MScan(App):
     '''
     def __init__(self, **kwargs):
         super(MSman, self).__init__(**kwargs)
@@ -25,4 +25,4 @@ class MSman(App):
 
 
 if __name__ == '__main__':
-    MSman().run()
+    MScan().run()
