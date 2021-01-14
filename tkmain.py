@@ -1,6 +1,6 @@
 import tkinter as tk
 import subprocess
-from subprocess import PIPE
+from subprocess import CREATE_BREAKAWAY_FROM_JOB, PIPE
 import asyncio
 from tkinter.constants import OUTSIDE
 
@@ -14,7 +14,7 @@ class MSman(tk.Frame):
     def create_widgets(self):
         self.title = tk.Label(self, text='Hello World', width=50)
         self.title.pack(anchor='center')
-        self.MStart = tk.Button(self, text="start", fg="green", command='MServer')
+        self.MStart = tk.Button(self, text="start", fg="green", command=self.MServer)
         self.MStart.pack(anchor='center')
         self.title = tk.Label(self, text=self.output, width=50)
         self.title.pack(anchor='center')
@@ -22,8 +22,7 @@ class MSman(tk.Frame):
         self.quit.pack(side="bottom")
 
     async def MServer(self):
-        self.output = subprocess.run("java -jar mohist-1.12.2-165-server.jar", shell=True, stdout=PIPE, stderr=PIPE, text=True)
-
+        self.output = subprocess.Popen("java -jar mohist-1.12.2-165-server.jar", shell=True, stdout=PIPE, stderr=PIPE, text=True)
 
 root = tk.Tk()
 app = MSman(master=root)
