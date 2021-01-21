@@ -1,9 +1,10 @@
-from os import truncate
+import os
 import tkinter as tk
+from tkinter.scrolledtext import ScrolledText
 import subprocess
 from subprocess import CREATE_BREAKAWAY_FROM_JOB, PIPE
 import asyncio
-from tkinter.constants import OUTSIDE, RIGHT, TOP
+from tkinter.constants import END, OUTSIDE, RIGHT, TOP
 import sys
 import time
 import threading
@@ -14,6 +15,7 @@ class MSman(tk.Frame):
         super().__init__(master)
         self.pack()
         self.create_widgets()
+        self.Logging()
 
     def create_widgets(self):
         self.console = tk.Frame(root)
@@ -35,17 +37,42 @@ class MSman(tk.Frame):
 
         #console
         
-        self.output = scrolledtext(self.console)
-        self.output.pack()
+        self.output = ScrolledText(self.console)
+        self.output.pack(padx=10, pady=10)
         self.console.pack(expand=True, fill="both",side=RIGHT)
 
 
 
-    def MServer(self):
-        self.output = subprocess.Popen("java -jar mohist-1.12.2-165-server.jar", shell=True, stdout=PIPE, stderr=PIPE, text=True)
+    def MServer(self,cmd):
+        proc = subprocess.Popen(cmd,
+                     stdout=subprocess.PIPE,
+                     stderr=subprocess.STDOUT)
+
+        while True:
+            self.line = proc.stdout.readline()
+            if self.line:
+                yield self.line
+
+            if not self.line and proc.poll() is not None:
+                break
+        #("java -jar mohist-1.12.2-165-server.jar", shell=True, stdout=PIPE, stderr=PIPE, text=True)
 
     def MSStop(self):
         None
+
+    def Logstop():
+        False
+    
+    async def Logging(self):
+        logbuffer = "default"
+        while True:
+            if logbuffer != self.line:
+                logbuffer = self.line
+                self.output.insert(self.line,'\n')
+                self.output.see('end')
+            if self.Logstop == True:
+                break
+
 
 
 root = tk.Tk()
