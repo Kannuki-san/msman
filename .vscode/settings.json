@@ -4,8 +4,16 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-    "python.testing.pytestEnabled": true,
+    "python.testing.pytestEnabled": false,
     "cSpell.words": [
         "asyncio"
-    ]
+    ],
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "*test.py"
+    ],
+    "python.testing.promptToConfigure": false
 }
