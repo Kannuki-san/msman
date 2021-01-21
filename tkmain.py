@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 from tkinter import Label, Toplevel, font
 from tkinter.scrolledtext import ScrolledText
@@ -7,6 +8,9 @@ from tkinter.constants import DISABLED, END, OUTSIDE, RIGHT, TOP
 import threading
 import tkinter.filedialog
 import configparser
+import datetime
+import tkinter.ttk as ttk
+import linecache
 
 class MSman(tk.Frame):
     output = ""
@@ -30,7 +34,7 @@ class MSman(tk.Frame):
         self.SVstart.grid(row=0, column=0, padx=10, pady=10)
         self.SVStop = tk.Button(self.topbutton, text="stop server", command=self.MSStop)
         self.SVStop.grid(row=0, column=1, padx=10, pady=10)
-        self.quit = tk.Button(self.topbutton, text='QuitWindow', command=root.destroy)
+        self.quit = tk.Button(self.topbutton, text='QuitWindow', command=self.quit)
         self.quit.grid(row=0, column=2, padx=10, pady=10)
 
         self.topbutton.pack(expand=True, fill='y', anchor='center', side=TOP, padx=10, pady=10)
@@ -57,36 +61,33 @@ class MSman(tk.Frame):
 
 
     def Start_Clicked(self):
-        self.thread1 = threading.Thread(target=self.StartMS)
-        self.thread1.start()
-
-    def StartMS(self):
-        logbuf = ""
         if self.Serverdir:
             if '.jar' in self.serverplace:
-                for output_line in self.MServer(cmd='java -jar '+self.serverplace+' nogui'):
-                    if output_line != logbuf:
-                        line1 = str(output_line)[2:]
-                        line2=line1[::-1]
-                        line=line2[2:]
-                        self.output.insert(tk.END,output_line+'\n')
-                        self.output.see(tk.END)
-                        logbuf = output_line
-
+                if self.check_eula():
+                    self.thread1 = threading.Thread(target=self.StartMS)
+                    self.thread1.start()
+                else:
+                    self.sign_eula()
             else:
                 self.output.insert(tk.END,'サーバーファイルが選択されていません\n')
                 self.output.see(tk.END)
         else:
-                self.output.insert(tk.END,'サーバーディレクトリが選択されていません\n')
-                self.output.see(tk.END)
+            self.output.insert(tk.END,'サーバーディレクトリが選択されていません\n')
+            self.output.see(tk.END)
+    
+    def StartMS(self):
+        logbuf = ""
+        for output_line in self.MServer(cmd='java -jar '+self.serverplace+' nogui'):
+                if output_line != logbuf:
+                    self.output.insert(tk.END,output_line+'\n')
+                    self.output.see(tk.END)
+                    logbuf = output_line
+
+
                 
-        '''
-                await self.output.insert(tk.END,output_line)
-                await self.output.insert(tk.END,'\n')
-                await self.output.see(tk.END)
-        '''
 
     def MServer(self,cmd):
+        
         self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,shell=True,text=True,cwd=self.Serverdir)
         stdout_data = self.p.stdout.readline
         return iter(stdout_data,None)
@@ -95,8 +96,10 @@ class MSman(tk.Frame):
 
 
     def MSStop(self):
-        self.p.stdin.write('stop\n')
-        self.p.stdin.flush()
+        if hasattr(self,'p'):
+            self.p.stdin.write('stop\n')
+            self.p.stdin.flush()
+            delattr(self,'p')
         
 
     def Logstop(self):
@@ -165,19 +168,53 @@ class MSman(tk.Frame):
             self.config.write(file)
 
     def quit(self):
-        self.config['Files'] = {
-            'Serverfile':self.serverplace,
-            'ServerDir' :self.Serverdir,
-            }
-        with open('config.ini','w') as file:
-            self.config.write(file)
-        self.p.stdin.write('stop\n')
-        self.p.stdin.flush()
-        self.thread1.join()
-        root.destroy()
+        if hasattr(self,'p'):
+            self.output.insert(tk.END,'サーバーが開いています')
+            self.output.see(tk.END)
 
+        else:    
+            self.setconfig()
+            root.destroy()
+            sys.exit(0)
+
+    def check_eula(self):
+        if os.path.isfile(self.Serverdir +'/eula.txt'):
+            eula_line = linecache.getline(self.Serverdir +'/eula.txt',int(3))
+            print(eula_line)
+            text = 'eula=true\n'
+            print(text)
+            if eula_line == text:
+                linecache.clearcache()
+                return True
+            else:
+                linecache.clearcache()
+                return False
+        else:
+            return False
+
+    def sign_eula(self):
+        self.eula_win = Toplevel(master=self.master)
+        label1=tk.Label(self.eula_win,text='trueに設定することで、EULA(https://account.mojang.com/documents/minecraft_eula)を承諾できます。')
+        label1.pack()
+        self.ebox = ttk.Entry(self.eula_win)
+        self.ebox.pack()
+        button = tk.Button(self.eula_win,text='OK',command=self.write_eula)
+        button.pack()
+        self.eula_win.focus_set()
+        self.eula_win.transient(self.master)
+        self.eula_win.grab_set()
+
+    def write_eula(self):
+        if self.ebox.get() == 'true':
+            self.eula_win.destroy
+            path=self.Serverdir +'/eula.txt'
+            f = open(path, 'w')
+            today = datetime.date.today()
+            text='#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).'
+            f.write(text + '\n' +str(today)+ '\n' + 'eula=true')
+            f.close
     
-        
+    
 
 
 root = tk.Tk()
