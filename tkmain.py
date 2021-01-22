@@ -62,9 +62,11 @@ class MSman(tk.Frame):
         self.underbox.pack(expand=False,fill='x',side='bottom')
         
 
-
     serverplace = ''
     Serverdir = ''
+    serverMem = '4'
+    Addop=''
+
 
 
     def Start_Clicked(self):
@@ -85,7 +87,7 @@ class MSman(tk.Frame):
     
     def StartMS(self):
         logbuf = ""
-        for output_line in self.MServer(cmd='java -server '+self.serverMem+'-jar' +self.serverplace+ ' nogui'):
+        for output_line in self.MServer(cmd='java -server '+ f'-Xmx{self.serverMem}G -Xms{self.serverMem}G '+self.Addop+'-jar ' +self.serverplace+ ' nogui'):
                 if output_line != logbuf:
                     self.output.insert(tk.END,output_line)
                     self.output.see(tk.END)
@@ -152,6 +154,7 @@ class MSman(tk.Frame):
         Decision.place(x=350,y=250)
         Getmodlist = tk.Button(sub_win,text='Modlist取得',command=self.get_mods)
         Getmodlist.place(x=8,y=100)
+        
         setting_t.focus_set()
         sub_win.transient(self.master)
         sub_win.grab_set()
@@ -168,30 +171,27 @@ class MSman(tk.Frame):
         read_Files = self.config['Files']
         self.serverplace = read_Files.get('Serverfile')
         self.Serverdir = read_Files.get('ServerDir')
-        read_SC = self.config['ServerConfig']
+        read_SC = self.config['Argument']
         self.serverMem = read_SC.get('Memory')
         self.Addop = read_SC.get('addition')
     
     def setconfig(self):
         self.config['Files'] = {
             'Serverfile':self.serverplace,
-            'ServerDir' :self.Serverdir,
-            }
-        self.config['ServerConfig']={
+            'ServerDir' :self.Serverdir
+        }
+        self.config['Argument'] = {
             'Memory' :self.serverMem,
-            'addition':self.Addop
+            'Addition' :self.Addop
         }
         with open('config.ini','w',encoding='utf-8') as file:
             self.config.write(file)
 
     def quit(self):
         if hasattr(self,'p'):
-            self.output.insert(tk.END,'サーバーが開いています\n')
-            self.output.see(tk.END)
-
-        else:    
-            self.setconfig()
-            root.destroy()
+            self.p.stdin.write('stop\n')
+        self.setconfig()
+        root.destroy()
 
     def check_eula(self):
         if os.path.isfile(self.Serverdir +'/eula.txt'):
@@ -251,9 +251,6 @@ class MSman(tk.Frame):
             self.output.see(tk.END)
             self.commandbox.delete(0, tk.END)
 
-                    
-    
-    
 
 
 root = tk.Tk()
