@@ -1,7 +1,7 @@
 import os
 import sys
+import tkinter.font as font
 import tkinter as tk
-from tkinter import Label, Toplevel, font
 from tkinter.scrolledtext import ScrolledText
 import subprocess
 from tkinter.constants import DISABLED, END, OUTSIDE, RIGHT, TOP
@@ -24,6 +24,7 @@ class MSman(tk.Frame):
     def create_widgets(self):
         self.console = tk.Frame(root)
         self.topbutton = tk.Frame(root)
+        self.underbox = tk.Frame(root)
         self.frame0 = tk.Frame(root)
         self.frame1 = tk.Frame(root)
         self.frame2 = tk.Frame(root)
@@ -37,13 +38,13 @@ class MSman(tk.Frame):
         self.quit = tk.Button(self.topbutton, text='QuitWindow', command=self.quit)
         self.quit.grid(row=0, column=2, padx=10, pady=10)
 
-        self.topbutton.pack(expand=True, fill='y', anchor='center', side=TOP, padx=10, pady=10)
+        self.topbutton.pack(expand=False, side='top', padx=10, pady=10)
 
         #console
         console_font = font.Font(root,family='MSゴシック')
         self.output = ScrolledText(self.console,background='black',fg='white',font=console_font)
-        self.output.pack(padx=10, pady=10,fill='both')
-        self.console.pack(expand=True, fill="both",side=RIGHT)
+        self.output.pack(padx=10, pady=10,fill='both',expand=True)
+        self.console.pack(expand=True, fill="both")
 
         #menubar
         menubar = tk.Menu(root)
@@ -53,6 +54,12 @@ class MSman(tk.Frame):
         File.add_command(label='OpenServer',command=self.Open_Serverfile)
         File.add_command(label='OpenDirectory',command=self.Setdir)
         File.add_command(label='Settings',command=self.settings)
+
+        #textbox
+        self.commandbox = tk.Entry(self.underbox)
+        self.commandbox.pack(padx=5,pady=5,fill='x')
+        self.commandbox.bind('<Return>',self.write_mconsole)
+        self.underbox.pack(expand=False,fill='x',side='bottom')
         
 
 
@@ -65,6 +72,7 @@ class MSman(tk.Frame):
             if '.jar' in self.serverplace:
                 if self.check_eula():
                     self.thread1 = threading.Thread(target=self.StartMS)
+                    self.thread1.setDaemon(True)
                     self.thread1.start()
                 else:
                     self.sign_eula()
@@ -77,9 +85,9 @@ class MSman(tk.Frame):
     
     def StartMS(self):
         logbuf = ""
-        for output_line in self.MServer(cmd='java -jar '+self.serverplace+' nogui'):
+        for output_line in self.MServer(cmd='java -server '+self.serverMem+'-jar' +self.serverplace+ ' nogui'):
                 if output_line != logbuf:
-                    self.output.insert(tk.END,output_line+'\n')
+                    self.output.insert(tk.END,output_line)
                     self.output.see(tk.END)
                     logbuf = output_line
 
@@ -88,7 +96,7 @@ class MSman(tk.Frame):
 
     def MServer(self,cmd):
         
-        self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,shell=True,text=True,cwd=self.Serverdir)
+        self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,cwd=self.Serverdir,text=True)
         stdout_data = self.p.stdout.readline
         return iter(stdout_data,None)
         #("java -jar mohist-1.12.2-165-server.jar", shell=True, stdout=PIPE, stderr=PIPE, text=True)
@@ -125,7 +133,7 @@ class MSman(tk.Frame):
         self.dir_path['text']=self.Serverdir
 
     def settings(self):
-        sub_win = Toplevel(master=self.master)
+        sub_win = tk.Toplevel(master=self.master)
         setting_t = tk.Label(sub_win,text='設定')
         setting_t.pack()
         file = tk.Label(sub_win,text='サーバーファイル')
@@ -142,6 +150,8 @@ class MSman(tk.Frame):
         dir_button.place(x=350,y=68)
         Decision=tk.Button(sub_win,text='保存',command=self.setconfig)
         Decision.place(x=350,y=250)
+        Getmodlist = tk.Button(sub_win,text='Modlist取得',command=self.get_mods)
+        Getmodlist.place(x=8,y=100)
         setting_t.focus_set()
         sub_win.transient(self.master)
         sub_win.grab_set()
@@ -158,24 +168,30 @@ class MSman(tk.Frame):
         read_Files = self.config['Files']
         self.serverplace = read_Files.get('Serverfile')
         self.Serverdir = read_Files.get('ServerDir')
+        read_SC = self.config['ServerConfig']
+        self.serverMem = read_SC.get('Memory')
+        self.Addop = read_SC.get('addition')
     
     def setconfig(self):
         self.config['Files'] = {
             'Serverfile':self.serverplace,
             'ServerDir' :self.Serverdir,
             }
-        with open('config.ini','w') as file:
+        self.config['ServerConfig']={
+            'Memory' :self.serverMem,
+            'addition':self.Addop
+        }
+        with open('config.ini','w',encoding='utf-8') as file:
             self.config.write(file)
 
     def quit(self):
         if hasattr(self,'p'):
-            self.output.insert(tk.END,'サーバーが開いています')
+            self.output.insert(tk.END,'サーバーが開いています\n')
             self.output.see(tk.END)
 
         else:    
             self.setconfig()
             root.destroy()
-            sys.exit(0)
 
     def check_eula(self):
         if os.path.isfile(self.Serverdir +'/eula.txt'):
@@ -193,7 +209,7 @@ class MSman(tk.Frame):
             return False
 
     def sign_eula(self):
-        self.eula_win = Toplevel(master=self.master)
+        self.eula_win = tk.Toplevel(master=self.master)
         label1=tk.Label(self.eula_win,text='trueに設定することで、EULA(https://account.mojang.com/documents/minecraft_eula)を承諾できます。')
         label1.pack()
         self.ebox = ttk.Entry(self.eula_win)
@@ -213,6 +229,29 @@ class MSman(tk.Frame):
             text='#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).'
             f.write(text + '\n' +str(today)+ '\n' + 'eula=true')
             f.close
+
+    def get_mods(self):
+        isdir = os.path.isdir(self.Serverdir+'/mods')
+        if isdir:
+            mods = os.listdir(self.Serverdir+'/mods')
+            with open('modlist.txt','w',encoding='utf-8') as modlist:
+                modlist.write('mod一覧\n')
+                list = '\n'.join(mods)
+                modlist.write(list)
+                modlist.close()
+
+    def write_mconsole(self,event):
+        if hasattr(self,'p'):
+            command = str(self.commandbox.get())
+            self.commandbox.delete(0, tk.END)
+            self.p.stdin.write(command+'\n')
+            self.p.stdin.flush()
+        else:
+            self.output.insert(tk.END,'サーバーはまだ動作していません\n')
+            self.output.see(tk.END)
+            self.commandbox.delete(0, tk.END)
+
+                    
     
     
 
