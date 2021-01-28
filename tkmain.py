@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import tkinter.font as font
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
@@ -11,6 +12,7 @@ import configparser
 import datetime
 import tkinter.ttk as ttk
 import linecache
+from mcstatus import MinecraftServer, server
 
 class MSman(tk.Frame):
     output = ""
@@ -18,17 +20,19 @@ class MSman(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()
-        self.create_widgets()
+        self.setfirst()
         self.readconfig()
+        self.create_widgets()
 
     def create_widgets(self):
         self.console = tk.Frame(root)
         self.topbutton = tk.Frame(root)
         self.underbox = tk.Frame(root)
-        self.frame0 = tk.Frame(root)
-        self.frame1 = tk.Frame(root)
-        self.frame2 = tk.Frame(root)
-        self.frame3 = tk.Frame(root)
+        #self.online_player = tk.Frame(root)
+        #self.frame0 = tk.Frame(root)
+        #self.frame1 = tk.Frame(root)
+        #self.frame2 = tk.Frame(root)
+        #self.frame3 = tk.Frame(root)
 
         #topbutton
         self.SVstart = tk.Button(self.topbutton, text="start server", command=self.Start_Clicked)
@@ -40,10 +44,18 @@ class MSman(tk.Frame):
 
         self.topbutton.pack(expand=False, side='top', padx=10, pady=10)
 
+        '''
+        #player
+        self.playerlist = tk.Label(self.online_player,text='オンライン{0}人'.format(self.status))
+        self.playerlist.pack()
+        self.online_player.pack()
+        '''
+
         #console
         console_font = font.Font(root,family='MSゴシック')
         self.output = ScrolledText(self.console,background='black',fg='white',font=console_font)
         self.output.pack(padx=10, pady=10,fill='both',expand=True)
+        self.output.configure(state='disabled')
         self.console.pack(expand=True, fill="both")
 
         #menubar
@@ -60,12 +72,26 @@ class MSman(tk.Frame):
         self.commandbox.pack(padx=5,pady=5,fill='x')
         self.commandbox.bind('<Return>',self.write_mconsole)
         self.underbox.pack(expand=False,fill='x',side='bottom')
-        
 
-    serverplace = ''
-    Serverdir = ''
-    serverMem = '4'
-    Addop=''
+
+
+    def setfirst(self):
+        self.serverplace = ''
+        self.Serverdir = ''
+        self.serverMem = '4'
+        self.Addop=''
+        self.status = 0
+
+    '''    
+    def check_player(self):
+        self.timestop == False
+        self.server = MinecraftServer.lookup('localhost:25565')
+        self.status = self.server.status()
+        while not self.timestop:
+            time.sleep(5)
+            self.status = self.server.status()
+            self.playerlist.config(text='aaaa')
+    '''
 
 
 
@@ -73,25 +99,36 @@ class MSman(tk.Frame):
         if self.Serverdir:
             if '.jar' in self.serverplace:
                 if self.check_eula():
+                    #self.check_word()
                     self.thread1 = threading.Thread(target=self.StartMS)
                     self.thread1.setDaemon(True)
                     self.thread1.start()
                 else:
                     self.sign_eula()
             else:
-                self.output.insert(tk.END,'サーバーファイルが選択されていません\n')
-                self.output.see(tk.END)
+                self.insert_line('サーバーファイルが選択されていません\n')
         else:
-            self.output.insert(tk.END,'サーバーディレクトリが選択されていません\n')
-            self.output.see(tk.END)
+            self.insert_line('サーバーディレクトリが選択されていません\n')
     
     def StartMS(self):
         logbuf = ""
-        for output_line in self.MServer(cmd='java -server '+ f'-Xmx{self.serverMem}G -Xms{self.serverMem}G '+self.Addop+'-jar ' +self.serverplace+ ' nogui'):
-                if output_line != logbuf:
-                    self.output.insert(tk.END,output_line)
-                    self.output.see(tk.END)
-                    logbuf = output_line
+        for self.output_line in self.MServer(cmd='java -server '+ f'-Xmx{self.serverMem}G -Xms{self.serverMem}G '+self.Addop+' -jar ' +self.serverplace+ ' nogui'):
+            if self.output_line != logbuf:
+                self.insert_line(self.output_line)
+                logbuf = self.output_line
+    '''
+    def check_word(self):
+        for check in self.output_line:
+            if 'help' in check:
+                self.check_player()
+                '''
+
+
+    def insert_line(self,text):
+        self.output.configure(state='normal')
+        self.output.insert(tk.END,text)
+        self.output.see(tk.END)
+        self.output.configure(state='disabled')
 
 
                 
@@ -100,6 +137,7 @@ class MSman(tk.Frame):
         
         self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,cwd=self.Serverdir,text=True)
         stdout_data = self.p.stdout.readline
+        
         return iter(stdout_data,None)
         #("java -jar mohist-1.12.2-165-server.jar", shell=True, stdout=PIPE, stderr=PIPE, text=True)
     
@@ -110,12 +148,13 @@ class MSman(tk.Frame):
             self.p.stdin.write('stop\n')
             self.p.stdin.flush()
             delattr(self,'p')
+            #self.timestop = True
         
-
+    '''
     def Logstop(self):
         False
     
-    '''async def Logging(self):
+    async def Logging(self):
         logbuffer = "default"
         while True:
             if logbuffer != self.line:
@@ -153,7 +192,12 @@ class MSman(tk.Frame):
         Decision=tk.Button(sub_win,text='保存',command=self.setconfig)
         Decision.place(x=350,y=250)
         Getmodlist = tk.Button(sub_win,text='Modlist取得',command=self.get_mods)
-        Getmodlist.place(x=8,y=100)
+        Getmodlist.place(x=8,y=300)
+        Mem = tk.Label(sub_win,text='割り当てメモリ')
+        Mem.place(x=8, y=100)
+        getMem = tk.Entry(sub_win)
+        getMem.insert(tk.END,self.serverMem)
+        getMem.place(x=90, y= 100)
         
         setting_t.focus_set()
         sub_win.transient(self.master)
@@ -247,8 +291,7 @@ class MSman(tk.Frame):
             self.p.stdin.write(command+'\n')
             self.p.stdin.flush()
         else:
-            self.output.insert(tk.END,'サーバーはまだ動作していません\n')
-            self.output.see(tk.END)
+            self.insert_line('サーバーはまだ動作していません\n')
             self.commandbox.delete(0, tk.END)
 
 
