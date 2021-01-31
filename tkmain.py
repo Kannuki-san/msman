@@ -277,7 +277,7 @@ class MSman(tk.Frame):
         if isdir:
             mods = os.listdir(self.Serverdir+'/mods')
             with open('modlist.txt','w',encoding='utf-8') as modlist:
-                modlist.write('mod一覧\n')
+                modlist.write('mod一覧\n\n')
                 list = '\n'.join(mods)
                 modlist.write(list)
                 modlist.close()
