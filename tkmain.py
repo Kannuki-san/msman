@@ -238,9 +238,7 @@ class MSman(tk.Frame):
     def check_eula(self):
         if os.path.isfile(self.Serverdir +'/eula.txt'):
             eula_line = linecache.getline(self.Serverdir +'/eula.txt',int(3))
-            print(eula_line)
             text = 'eula=true\n'
-            print(text)
             if eula_line == text:
                 linecache.clearcache()
                 return True
