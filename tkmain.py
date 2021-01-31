@@ -133,7 +133,7 @@ class MSman(tk.Frame):
 
     def MServer(self,cmd):
         
-        self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,cwd=self.Serverdir,text=True,shell=False)
+        self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,cwd=self.Serverdir,text=True,shell=True)
         stdout_data = self.p.stdout.readline
         
         return iter(stdout_data,None)
