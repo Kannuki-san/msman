@@ -5,7 +5,7 @@ base = None
 
 
 # GUI=有効, CUI=無効 にする
-if sys.platform == 'win32' : base = 'Win32GUI'
+if sys.platform == 'win32' : base = 'win32'
 
 
 exe = Executable(script = 'tkmain.py',base = base)
