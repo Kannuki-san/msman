@@ -10,7 +10,7 @@ import configparser
 import datetime
 import tkinter.ttk as ttk
 import linecache
-from mcstatus import MinecraftServer
+#from mcstatus import MinecraftServer
 
 class MSman(tk.Frame):
     output = ""
