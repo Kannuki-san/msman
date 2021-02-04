@@ -13,6 +13,7 @@ import configparser
 import datetime
 import tkinter.ttk as ttk
 import linecache
+import Web
 
 #from mcstatus import MinecraftServer
 
@@ -98,7 +99,15 @@ class MSman(tk.Frame):
     '''
 
     def Get_Server(self):
-        pass
+        thread = threading.Thread(target=Web.run,daemon=True)
+        thread.start()
+        thread.join()
+        cwd = os.getcwd()
+        place = '/ServerData/server.jar'
+        dir = '/ServerData'
+        self.serverplace = cwd + str(place)
+        self.Serverdir = cwd + str(dir)
+
 
 
 

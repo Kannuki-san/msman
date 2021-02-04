@@ -46,6 +46,8 @@ class Downloader(PyQt5.QtWidgets.QWidget):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+
+        
     @PyQt5.QtCore.pyqtSlot("QWebEngineDownloadItem*")
     def on_downloadRequested(self,download):
         self.old_path = download.url().path()  # download.path()
@@ -56,6 +58,7 @@ class Downloader(PyQt5.QtWidgets.QWidget):
         sub = subwindow()
         sub.show()
         
+
     
     def download(self):
         if not os.path.isdir('./ServerData'):
@@ -70,7 +73,7 @@ class subwindow(PyQt5.QtWidgets.QWidget):
         self.w = PyQt5.QtWidgets.QDialog(parent)
         label = PyQt5.QtWidgets.QLabel()
         label.setText('ダウンロード終了')
-        button = PyQt5.QtWidgets.QPushButton('閉じる')
+        button = PyQt5.QtWidgets.QPushButton('閉じる',self.w)
         button.clicked.connect(QtCore.QCoreApplication.instance().quit)
         layout = PyQt5.QtWidgets.QHBoxLayout()
         layout.addWidget(label)
@@ -80,11 +83,16 @@ class subwindow(PyQt5.QtWidgets.QWidget):
     
     def show(self):
         self.w.exec_()
+
     
 
+def run():
+    app = PyQt5.QtWidgets.QApplication(sys.argv)
+    ex = Downloader()
+    sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    # mainPyQt5()
+        # mainPyQt5()
     app = PyQt5.QtWidgets.QApplication(sys.argv)
 
     # setWindowIcon is a method for QApplication, not for QWidget
