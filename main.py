@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import tkinter.font as font
 import tkinter as tk
@@ -10,6 +13,7 @@ import configparser
 import datetime
 import tkinter.ttk as ttk
 import linecache
+
 #from mcstatus import MinecraftServer
 
 class MSman(tk.Frame):
@@ -37,8 +41,10 @@ class MSman(tk.Frame):
         self.SVstart.grid(row=0, column=0, padx=10, pady=10)
         self.SVStop = tk.Button(self.topbutton, text="stop server", command=self.MSStop)
         self.SVStop.grid(row=0, column=1, padx=10, pady=10)
-        self.quit = tk.Button(self.topbutton, text='QuitWindow', command=self.quit)
-        self.quit.grid(row=0, column=2, padx=10, pady=10)
+        self.GetServer = tk.Button(self.topbutton,text='サーバー取得',command=self.Get_Server)
+        self.GetServer.grid(row=0,column=2,padx=10, pady=10)
+        self.quit = tk.Button(self.topbutton, text='終了', command=self.quit)
+        self.quit.grid(row=0, column=3, padx=10, pady=10)
 
         self.topbutton.pack(expand=False, side='top', padx=10, pady=10)
 
@@ -60,10 +66,10 @@ class MSman(tk.Frame):
         menubar = tk.Menu(root)
         root.config(menu=menubar)
         File = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label='files',menu=File)
-        File.add_command(label='OpenServer',command=self.Open_Serverfile)
-        File.add_command(label='OpenDirectory',command=self.Setdir)
-        File.add_command(label='Settings',command=self.settings)
+        menubar.add_cascade(label='ファイル',menu=File)
+        File.add_command(label='サーバーファイル',command=self.Open_Serverfile)
+        File.add_command(label='ディレクトリ',command=self.Setdir)
+        File.add_command(label='設定',command=self.settings)
 
         #textbox
         self.commandbox = tk.Entry(self.underbox)
@@ -90,6 +96,9 @@ class MSman(tk.Frame):
             self.status = self.server.status()
             self.playerlist.config(text='aaaa')
     '''
+
+    def Get_Server(self):
+        pass
 
 
 
@@ -289,6 +298,7 @@ class MSman(tk.Frame):
         else:
             self.insert_line('サーバーはまだ動作していません\n')
             self.commandbox.delete(0, tk.END)
+
 
 
 icondata='''R0lGODlhEAAQAPcAAAAAAAAAMwAAZgAAmQAAzAAA/wArAAArMwArZgArmQArzAAr
