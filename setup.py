@@ -8,7 +8,7 @@ base = None
 if sys.platform == 'win32' : base = 'win32'
 
 
-exe = Executable(script = 'tkmain.py',base = base)
+exe = Executable(script = 'main.py',base = base)
 
 setup(name = 'MSman',
       version = '0.1',
