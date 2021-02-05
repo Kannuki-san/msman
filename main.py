@@ -43,12 +43,14 @@ class MSman(tk.Frame):
         #topbutton
         self.SVstart = tk.Button(self.topbutton, text="サーバー起動", command=self.Start_Clicked)
         self.SVstart.grid(row=0, column=0, padx=10, pady=10)
+        self.Save = tk.Button(self.topbutton,text='セーブワールド', command=self.SAVE)
+        self.Save.grid(row=0, column=1, padx=10, pady=10)
         self.SVStop = tk.Button(self.topbutton, text="サーバー停止", command=self.MSStop)
-        self.SVStop.grid(row=0, column=1, padx=10, pady=10)
+        self.SVStop.grid(row=0, column=2, padx=10, pady=10)
         self.GetServer = tk.Button(self.topbutton,text='公式サーバーをダウンロード',command=self.Get_Server)
-        self.GetServer.grid(row=0,column=2,padx=10, pady=10)
+        self.GetServer.grid(row=0,column=3,padx=10, pady=10)
         self.quit = tk.Button(self.topbutton, text='終了', command=self.quit)
-        self.quit.grid(row=0, column=3, padx=10, pady=10)
+        self.quit.grid(row=0, column=4, padx=10, pady=10)
 
 
         self.topbutton.pack(expand=False, side='top', padx=10, pady=10)
@@ -134,12 +136,15 @@ class MSman(tk.Frame):
                     local = socket.gethostbyname(socket.gethostname())
                     self.propaties = configparser.ConfigParser()
                     port = ''
-                    with open(self.Serverdir+'/server.properties','r', encoding="utf_8") as f:
-                        line = f.readlines()
-                        read = [s for s in line if 'query.port=' in s]
-                        port = str(read).split('=')[1]
-                        port = port[:-4]
-                        f.close()
+                    if os.path.isfile(self.Serverdir+'/server.properties'):
+                        with open(self.Serverdir+'/server.properties','r', encoding="utf_8") as f:
+                            line = f.readlines()
+                            read = [s for s in line if 'query.port=' in s]
+                            port = str(read).split('=')[1]
+                            port = port[:-4]
+                            f.close()
+                    else:
+                        port = 25565
                     self.IP['text'] = f'グローバルIP : {ip}\nローカルIP : {local}\nポート : {port}'
 
                 else:
@@ -153,11 +158,11 @@ class MSman(tk.Frame):
         self.insert_line('少しお待ちください\n')
         for self.output_line in self.MServer(cmd='java -server '+ f'-Xmx{self.serverMem}G -Xms{self.serverMem}G '+self.Addop+' -jar ' +self.serverplace+ ' nogui'):
             self.insert_line(self.output_line)
+
             if self.StopConsole == True:
-                if not hasattr(self,'p'):
-                    self.insert_line('サーバーが停止しました\n')
-                    self.StopConsole = False
-                    break
+                self.insert_line('サーバーが停止しました\n')
+                self.StopConsole = False
+                break
 
 
 
@@ -179,8 +184,10 @@ class MSman(tk.Frame):
                 
 
     def MServer(self,cmd):
-        
-        self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,cwd=self.Serverdir,text=True,shell=True)
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+        self.p = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin=subprocess.PIPE,cwd=self.Serverdir,text=True,startupinfo=startupinfo,shell=False)
         stdout_data = self.p.stdout.readline
         
         return iter(stdout_data,None)
@@ -192,9 +199,17 @@ class MSman(tk.Frame):
         if hasattr(self,'p'):
             self.p.stdin.write('stop\n')
             self.p.stdin.flush()
-            self.insert_line('サーバーを停止します\n')
             self.StopConsole = True
             delattr(self,'p')
+        else:
+            self.insert_line('サーバーが開かれていません\n')
+
+    def SAVE(self):
+        if hasattr(self,'p'):
+            self.p.stdin.write('save-all\n')
+            self.p.stdin.flush()
+        else:
+            self.insert_line('サーバーが開かれていません\n')
 
 
         
@@ -282,7 +297,7 @@ class MSman(tk.Frame):
             self.config.write(file)
 
     def quit(self):
-        if hasattr(self,'p'):
+        if hasattr(self,'p') == True:
             self.MSStop()
         self.setconfig()
         root.destroy()
