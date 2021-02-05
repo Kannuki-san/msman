@@ -6,7 +6,7 @@ import tkinter.font as font
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import subprocess
-from tkinter.constants import DISABLED, END, OUTSIDE, RIGHT, TOP
+from tkinter.constants import DISABLED, END, HORIZONTAL, OUTSIDE, RIGHT, TOP, UNDERLINE
 import threading
 import tkinter.filedialog
 import configparser
@@ -14,6 +14,8 @@ import datetime
 import tkinter.ttk as ttk
 import linecache
 import Web
+import requests
+import socket
 
 #from mcstatus import MinecraftServer
 
@@ -31,6 +33,7 @@ class MSman(tk.Frame):
         self.console = tk.Frame(root)
         self.topbutton = tk.Frame(root)
         self.underbox = tk.Frame(root)
+        self.address = tk.Frame(root)
         #self.online_player = tk.Frame(root)
         #self.frame0 = tk.Frame(root)
         #self.frame1 = tk.Frame(root)
@@ -38,17 +41,23 @@ class MSman(tk.Frame):
         #self.frame3 = tk.Frame(root)
 
         #topbutton
-        self.SVstart = tk.Button(self.topbutton, text="start server", command=self.Start_Clicked)
+        self.SVstart = tk.Button(self.topbutton, text="サーバー起動", command=self.Start_Clicked)
         self.SVstart.grid(row=0, column=0, padx=10, pady=10)
-        self.SVStop = tk.Button(self.topbutton, text="stop server", command=self.MSStop)
+        self.SVStop = tk.Button(self.topbutton, text="サーバー停止", command=self.MSStop)
         self.SVStop.grid(row=0, column=1, padx=10, pady=10)
-        self.GetServer = tk.Button(self.topbutton,text='サーバー取得',command=self.Get_Server)
+        self.GetServer = tk.Button(self.topbutton,text='公式サーバーをダウンロード',command=self.Get_Server)
         self.GetServer.grid(row=0,column=2,padx=10, pady=10)
         self.quit = tk.Button(self.topbutton, text='終了', command=self.quit)
         self.quit.grid(row=0, column=3, padx=10, pady=10)
 
-        self.topbutton.pack(expand=False, side='top', padx=10, pady=10)
 
+        self.topbutton.pack(expand=False, side='top', padx=10, pady=10)
+        
+        self.IP = tk.Label(self.address)
+        self.IP.pack(padx=10, pady=10)
+
+        self.address.pack(expand=False, side='top', padx=10, pady=10)
+        
         '''
         #player
         self.playerlist = tk.Label(self.online_player,text='オンライン{0}人'.format(self.status))
@@ -86,6 +95,7 @@ class MSman(tk.Frame):
         self.serverMem = '4'
         self.Addop=''
         self.status = 0
+        self.StopConsole = False
 
     '''    
     def check_player(self):
@@ -119,6 +129,19 @@ class MSman(tk.Frame):
                     self.thread1 = threading.Thread(target=self.StartMS)
                     self.thread1.setDaemon(True)
                     self.thread1.start()
+                    res = requests.get('http://inet-ip.info/ip')
+                    ip = str(res.text.rstrip('\n'))
+                    local = socket.gethostbyname(socket.gethostname())
+                    self.propaties = configparser.ConfigParser()
+                    port = ''
+                    with open(self.Serverdir+'/server.properties','r', encoding="utf_8") as f:
+                        line = f.readlines()
+                        read = [s for s in line if 'query.port=' in s]
+                        port = str(read).split('=')[1]
+                        port = port[:-4]
+                        f.close()
+                    self.IP['text'] = f'グローバルIP : {ip}\nローカルIP : {local}\nポート : {port}'
+
                 else:
                     self.sign_eula()
             else:
@@ -127,17 +150,23 @@ class MSman(tk.Frame):
             self.insert_line('サーバーディレクトリが選択されていません\n')
     
     def StartMS(self):
-        logbuf = ""
+        self.insert_line('少しお待ちください\n')
         for self.output_line in self.MServer(cmd='java -server '+ f'-Xmx{self.serverMem}G -Xms{self.serverMem}G '+self.Addop+' -jar ' +self.serverplace+ ' nogui'):
-            if self.output_line != logbuf:
-                self.insert_line(self.output_line)
-                logbuf = self.output_line
+            self.insert_line(self.output_line)
+            if self.StopConsole == True:
+                if not hasattr(self,'p'):
+                    self.insert_line('サーバーが停止しました\n')
+                    self.StopConsole = False
+                    break
+
+
+
     '''
     def check_word(self):
         for check in self.output_line:
             if 'help' in check:
                 self.check_player()
-                '''
+    '''
 
 
     def insert_line(self,text):
@@ -163,8 +192,11 @@ class MSman(tk.Frame):
         if hasattr(self,'p'):
             self.p.stdin.write('stop\n')
             self.p.stdin.flush()
+            self.insert_line('サーバーを停止します\n')
+            self.StopConsole = True
             delattr(self,'p')
-            #self.timestop = True
+
+
         
     '''
     def Logstop(self):
@@ -208,11 +240,13 @@ class MSman(tk.Frame):
         Decision=tk.Button(sub_win,text='保存',command=self.setconfig)
         Decision.place(x=350,y=250)
         Getmodlist = tk.Button(sub_win,text='Modlist取得',command=self.get_mods)
-        Getmodlist.place(x=8,y=300)
+        Getmodlist.place(x=8,y=200)
         Mem = tk.Label(sub_win,text='割り当てメモリ')
         Mem.place(x=8, y=100)
         getMem = tk.Entry(sub_win)
         getMem.insert(tk.END,self.serverMem)
+        GB = tk.Label(sub_win,text='GB')
+        GB.place(x=200, y=100)
         getMem.place(x=90, y= 100)
         
         setting_t.focus_set()
@@ -249,7 +283,7 @@ class MSman(tk.Frame):
 
     def quit(self):
         if hasattr(self,'p'):
-            self.p.stdin.write('stop\n')
+            self.MSStop()
         self.setconfig()
         root.destroy()
 
@@ -287,6 +321,7 @@ class MSman(tk.Frame):
             text='#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).'
             f.write(text + '\n' +str(today)+ '\n' + 'eula=true')
             f.close
+            self.eula_win.destroy()
 
     def get_mods(self):
         isdir = os.path.isdir(self.Serverdir+'/mods')
