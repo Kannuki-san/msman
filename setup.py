@@ -5,7 +5,7 @@ base = None
 
 
 # GUI=有効, CUI=無効 にする
-if sys.platform == 'win32' : base = 'win32'
+if sys.platform == 'win32' : base = 'win32GUI'
 
 
 exe = Executable(script = 'main.py',base = base)
