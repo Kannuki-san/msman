@@ -230,11 +230,9 @@ class MSman(tk.Frame):
 
     def Open_Serverfile(self):
         self.serverplace = tkinter.filedialog.askopenfilename(filetypes=[('Serverfile','*.jar')])
-        self.filepath['text']=self.serverplace
 
     def Setdir(self):
         self.Serverdir = tkinter.filedialog.askdirectory()
-        self.dir_path['text']=self.Serverdir
 
     def settings(self):
         sub_win = tk.Toplevel(master=self.master)
@@ -263,6 +261,8 @@ class MSman(tk.Frame):
         GB = tk.Label(sub_win,text='GB')
         GB.place(x=200, y=100)
         getMem.place(x=90, y= 100)
+        self.filepath['text']=self.serverplace
+        self.dir_path['text']=self.Serverdir
         
         setting_t.focus_set()
         sub_win.transient(self.master)
