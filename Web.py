@@ -54,6 +54,8 @@ class Downloader(PyQt5.QtWidgets.QWidget):
         self.thread = threading.Thread(target=self.download)
         self.thread.setDaemon(True)
         self.thread.start()
+        #self.thread.join()
+        #self.download()
         sub = subwindow()
         sub.show()
         
