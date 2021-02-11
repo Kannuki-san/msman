@@ -9,7 +9,7 @@ import PyQt5.QtWidgets
 import sys
 import os
 import urllib.request
-import threading
+#import threading
 
 class Downloader(PyQt5.QtWidgets.QWidget):
     
