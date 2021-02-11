@@ -85,7 +85,7 @@ class subwindow(PyQt5.QtWidgets.QWidget):
         self.label = PyQt5.QtWidgets.QLabel()
         self.label.setText(self.text)
         button = PyQt5.QtWidgets.QPushButton('閉じる',self.w)
-        button.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        button.clicked.connect(sys.exit)
         layout = PyQt5.QtWidgets.QHBoxLayout()
         layout.addWidget(self.label)
         layout.addWidget(button)
