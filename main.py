@@ -16,6 +16,7 @@ import linecache
 import Web
 import requests
 import socket
+import webbrowser
 
 #from mcstatus import MinecraftServer
 
@@ -318,6 +319,7 @@ class MSman(tk.Frame):
         self.eula_win = tk.Toplevel(master=self.master)
         label1=tk.Label(self.eula_win,text='trueに設定することで、EULA(https://account.mojang.com/documents/minecraft_eula)を承諾できます。')
         label1.pack()
+        label1.bind("<Button-1>", lambda e: self.callback("https://account.mojang.com/documents/minecraft_eula"))
         self.ebox = ttk.Entry(self.eula_win)
         self.ebox.pack()
         button = tk.Button(self.eula_win,text='OK',command=self.write_eula)
@@ -325,6 +327,9 @@ class MSman(tk.Frame):
         self.eula_win.focus_set()
         self.eula_win.transient(self.master)
         self.eula_win.grab_set()
+    
+    def callback(self,url):
+        webbrowser.open_new(url)
 
     def write_eula(self):
         if self.ebox.get() == 'true':
