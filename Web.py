@@ -68,7 +68,6 @@ class Downloader(PyQt5.QtWidgets.QWidget):
     def download(self):
         if not os.path.isdir('./ServerData'):
             os.mkdir('./ServerData')
-        else:subwindow().show('すでにフォルダがあります')
         if not os.path.isfile('./ServerData/server.jar'):
             urllib.request.urlretrieve('https://launcher.mojang.com'+self.old_path,'./ServerData/server.jar',self.check) #'https://launcher.mojang.com'+self.old_path
             #https://launcher.mojang.com/v1/objects/1b557e7b033b583cd9f66746b7a9ab1ec1673ced/server.jar
