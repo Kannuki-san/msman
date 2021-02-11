@@ -59,13 +59,10 @@ class Downloader(PyQt5.QtWidgets.QWidget):
         #self.thread.join()
         self.download()
         
-    def process(self, blocknum, bs, size,):
-        readed_data = blocknum * bs
-        if size > 0: 
-            download_percentage = readed_data * 100 / bs 
-            self.progressBar.setValue(download_percentage) 
-            PyQt5.QtWidgets.QApplication.processEvents()
-            if download_percentage == 100:subwindow().show('ダウンロードが完了しました')
+    def check(self, block_count, block_size, total_size):
+        percentage = 100.0 * block_count * block_size / total_size
+        self.progressBar.setValue(percentage) 
+        PyQt5.QtWidgets.QApplication.processEvents()
 
     
     def download(self):
@@ -73,8 +70,9 @@ class Downloader(PyQt5.QtWidgets.QWidget):
             os.mkdir('./ServerData')
         else:subwindow().show('すでにフォルダがあります')
         if not os.path.isfile('./ServerData/server.jar'):
-            urllib.request.urlretrieve('https://launcher.mojang.com'+self.old_path,'./ServerData/server.jar',self.process) #'https://launcher.mojang.com'+self.old_path
+            urllib.request.urlretrieve('https://launcher.mojang.com'+self.old_path,'./ServerData/server.jar',self.check) #'https://launcher.mojang.com'+self.old_path
             #https://launcher.mojang.com/v1/objects/1b557e7b033b583cd9f66746b7a9ab1ec1673ced/server.jar
+            subwindow().show('ダウンロードが完了しました')
         else:subwindow().show('すでにファイルがあります')
 
 class subwindow(PyQt5.QtWidgets.QWidget):
