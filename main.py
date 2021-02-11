@@ -383,7 +383,7 @@ VbpLki1eURVpUatlGC9eWRnBlVTU69S2whhJyhqJFyO7WooK28crUlJJhdGG1aJw
 '''
 
 root = tk.Tk()
-root.tk.call('wm','iconphoto',root._w,tk.PhotoImage(data=icondata))
+#root.tk.call('wm','iconphoto',root._w,tk.PhotoImage(data=icondata))
 app = MSman(master=root)
 root.title('MSman')
 app.mainloop()

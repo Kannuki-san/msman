@@ -13,10 +13,14 @@ base = None
 if sys.platform == 'win32' : base = 'win32GUI'
 
 
-exe = Executable(script = 'main.py',base = base ,icon = icondata)
+exe = Executable(script = 'main.py',
+                  base = base,
+                  #icon=icondata
+                  )
 
 
 setup(name = 'MSman',
       version = '0.1',
-      description = 'converter',
-      executables = [exe])
+      description = 'Minecraft Server Manager',
+      executables = [exe]
+      )
