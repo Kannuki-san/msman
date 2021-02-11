@@ -30,8 +30,10 @@ class Downloader(PyQt5.QtWidgets.QWidget):
         self.browser.resize(800,600)
         self.browser.move(200,200)
         self.browser.setWindowTitle('Minecraft')
+        self.progressBar = PyQt5.QtWidgets.QProgressBar(self) 
         grid = PyQt5.QtWidgets.QGridLayout()
         grid.addWidget(self.browser,2, 0, 5, 15)
+        grid.addWidget(self.progressBar)
         self.setLayout(grid) 
         self.resize(1200, 800)
         self.center()
@@ -51,38 +53,48 @@ class Downloader(PyQt5.QtWidgets.QWidget):
     @PyQt5.QtCore.pyqtSlot("QWebEngineDownloadItem*")
     def on_downloadRequested(self,download):
         self.old_path = download.url().path()  # download.path()
-        self.thread = threading.Thread(target=self.download)
-        self.thread.setDaemon(True)
-        self.thread.start()
-        self.thread.join()
-        #self.download()
-        sub = subwindow()
-        sub.show()
+        #self.thread = threading.Thread(target=self.download)
+        #self.thread.setDaemon(True)
+        #self.thread.start()
+        #self.thread.join()
+        self.download()
         
+    def process(self, blocknum, bs, size,):
+        readed_data = blocknum * bs
+        if size > 0: 
+            download_percentage = readed_data * 100 / bs 
+            self.progressBar.setValue(download_percentage) 
+            PyQt5.QtWidgets.QApplication.processEvents()
+            if download_percentage == 100:subwindow().show('ダウンロードが完了しました')
 
     
     def download(self):
         if not os.path.isdir('./ServerData'):
             os.mkdir('./ServerData')
+        else:subwindow().show('すでにフォルダがあります')
         if not os.path.isfile('./ServerData/server.jar'):
-            urllib.request.urlretrieve('https://launcher.mojang.com'+self.old_path,'./ServerData/server.jar')
+            urllib.request.urlretrieve('https://launcher.mojang.com'+self.old_path,'./ServerData/server.jar',self.process) #'https://launcher.mojang.com'+self.old_path
             #https://launcher.mojang.com/v1/objects/1b557e7b033b583cd9f66746b7a9ab1ec1673ced/server.jar
+        else:subwindow().show('すでにファイルがあります')
 
 class subwindow(PyQt5.QtWidgets.QWidget):
-    
+    text = '完了'
     def __init__(self,parent = None):
+        super().__init__()
         self.w = PyQt5.QtWidgets.QDialog(parent)
-        label = PyQt5.QtWidgets.QLabel()
-        label.setText('ダウンロード終了')
+        self.label = PyQt5.QtWidgets.QLabel()
+        self.label.setText(self.text)
         button = PyQt5.QtWidgets.QPushButton('閉じる',self.w)
         button.clicked.connect(QtCore.QCoreApplication.instance().quit)
         layout = PyQt5.QtWidgets.QHBoxLayout()
-        layout.addWidget(label)
+        layout.addWidget(self.label)
         layout.addWidget(button)
         self.w.setLayout(layout)
+
         
     
-    def show(self):
+    def show(self,text):
+        self.label.setText = text
         self.w.exec_()
 
     

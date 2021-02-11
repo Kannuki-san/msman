@@ -113,7 +113,7 @@ class MSman(tk.Frame):
     def Get_Server(self):
         thread = threading.Thread(target=Web.run,daemon=True)
         thread.start()
-        thread.join()
+        #thread.join()
         cwd = os.getcwd()
         place = '/ServerData/server.jar'
         dir = '/ServerData'
@@ -262,8 +262,6 @@ class MSman(tk.Frame):
         GB = tk.Label(sub_win,text='GB')
         GB.place(x=200, y=100)
         getMem.place(x=90, y= 100)
-        self.filepath['text']=self.serverplace
-        self.dir_path['text']=self.Serverdir
         
         setting_t.focus_set()
         sub_win.transient(self.master)
