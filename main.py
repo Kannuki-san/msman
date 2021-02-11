@@ -333,7 +333,7 @@ class MSman(tk.Frame):
             f = open(path, 'w')
             today = datetime.date.today()
             text='#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).'
-            f.write(text + '\n' +str(today)+ '\n' + 'eula=true')
+            f.write(text + '\n' + '#' + str(today)+ '\n' + 'eula=true')
             f.close
             self.eula_win.destroy()
 
